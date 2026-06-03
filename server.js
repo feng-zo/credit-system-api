@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 8080;
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -15,14 +15,12 @@ let users = [
 ];
 let creditImages = [];
 
-// ========== API 接口 ==========
-
 // 获取所有客户
 app.get('/api/customers', (req, res) => {
     res.json({ success: true, data: customers });
 });
 
-// 保存单个客户
+// 保存客户
 app.post('/api/customers', (req, res) => {
     try {
         const customer = req.body;
@@ -40,23 +38,14 @@ app.post('/api/customers', (req, res) => {
 
 // 批量保存客户
 app.post('/api/customers/batch', (req, res) => {
-    try {
-        customers = req.body;
-        res.json({ success: true, count: customers.length });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
+    customers = req.body;
+    res.json({ success: true });
 });
 
 // 删除客户
 app.delete('/api/customers/:id', (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        customers = customers.filter(c => c.id !== id);
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
+    customers = customers.filter(c => c.id !== parseInt(req.params.id));
+    res.json({ success: true });
 });
 
 // 获取所有用户
@@ -66,65 +55,30 @@ app.get('/api/users', (req, res) => {
 
 // 注册用户
 app.post('/api/users', (req, res) => {
-    try {
-        const user = req.body;
-        if (users.find(u => u.username === user.username)) {
-            return res.json({ success: false, error: '用户名已存在' });
-        }
-        users.push(user);
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
+    const user = req.body;
+    if (users.find(u => u.username === user.username)) {
+        return res.json({ success: false, error: '用户名已存在' });
     }
+    users.push(user);
+    res.json({ success: true });
 });
 
 // 获取征信图片
 app.get('/api/credit-images/:customerId', (req, res) => {
-    try {
-        const id = parseInt(req.params.customerId);
-        const data = creditImages.find(c => c.customerId === id);
-        res.json({ success: true, images: data ? data.images : [] });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
+    const data = creditImages.find(c => c.customerId === parseInt(req.params.customerId));
+    res.json({ success: true, images: data ? data.images : [] });
 });
 
 // 保存征信图片
 app.post('/api/credit-images', (req, res) => {
-    try {
-        const { customerId, images } = req.body;
-        const index = creditImages.findIndex(c => c.customerId === customerId);
-        if (index >= 0) {
-            creditImages[index] = { customerId, images, updateTime: new Date() };
-        } else {
-            creditImages.push({ customerId, images, updateTime: new Date() });
-        }
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
+    const { customerId, images } = req.body;
+    const index = creditImages.findIndex(c => c.customerId === customerId);
+    if (index >= 0) {
+        creditImages[index] = { customerId, images };
+    } else {
+        creditImages.push({ customerId, images });
     }
-});
-
-// 删除征信图片
-app.delete('/api/credit-images/:customerId', (req, res) => {
-    try {
-        const id = parseInt(req.params.customerId);
-        creditImages = creditImages.filter(c => c.customerId !== id);
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-
-// 清空所有客户
-app.delete('/api/customers/all', (req, res) => {
-    try {
-        customers = [];
-        creditImages = [];
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
+    res.json({ success: true });
 });
 
 // 健康检查
@@ -134,7 +88,5 @@ app.get('/api/health', (req, res) => {
 
 // 启动服务器
 app.listen(port, '0.0.0.0', () => {
-    console.log(`✅ 服务器启动成功！`);
-    console.log(`📡 端口: ${port}`);
-    console.log(`🌐 地址: http://0.0.0.0:${port}`);
+    console.log(`✅ 服务器启动成功，端口: ${port}`);
 });
