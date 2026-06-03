@@ -1,0 +1,6 @@
+node_modules/
+
+# Local Netlify folder
+.netlify/*
+!.netlify/results.md
+!.netlify/netlify-agent-runner-context.md
