@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>客户征信管理</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f2;
+      --panel: #ffffff;
+      --ink: #17201b;
+      --muted: #657069;
+      --line: #dce1d7;
+      --accent: #1f7a5c;
+      --accent-dark: #155b45;
+      --warn: #b54708;
+      --danger: #b42318;
+      --shadow: 0 14px 35px rgba(23, 32, 27, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      background: #17352b;
+      color: #fff;
+      padding: 22px clamp(18px, 4vw, 48px);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto 48px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .toolbar, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .panel { padding: 18px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 11px;
+      min-height: 40px;
+      color: var(--ink);
+      font: inherit;
+      background: #fff;
+    }
+
+    textarea { min-height: 86px; resize: vertical; }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      min-height: 40px;
+      padding: 0 14px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--accent-dark); }
+    button.secondary { background: #e9efe8; color: var(--ink); }
+    button.secondary:hover { background: #dce6da; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #8f1d14; }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .status {
+      color: var(--muted);
+      min-height: 22px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    th, td {
+      padding: 11px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      background: #f3f6f1;
+    }
+
+    tr:hover td { background: #fbfcfa; }
+    .hidden { display: none !important; }
+    .login {
+      width: min(440px, calc(100% - 32px));
+      margin: 12vh auto;
+    }
+
+    .login h1 { margin: 0 0 8px; }
+    .login .panel { display: grid; gap: 14px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #eaf4ef;
+      color: #17664c;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      .span-2, .span-3, .span-4, .span-6, .span-12 { grid-column: 1; }
+      .toolbar { align-items: stretch; }
+      .actions, .toolbar > div { width: 100%; }
+      button { width: 100%; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+  </style>
+</head>
+<body>
+  <section id="loginView" class="login">
+    <div class="panel">
+      <div>
+        <h1>客户征信管理</h1>
+        <p class="status">使用员工或老板账号登录后管理客户资料。</p>
+      </div>
+      <label>用户名<input id="loginUser" autocomplete="username" value="yuangong"></label>
+      <label>密码<input id="loginPass" type="password" autocomplete="current-password" value="123456"></label>
+      <button id="loginBtn">登录</button>
+      <p id="loginStatus" class="status"></p>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <header>
+      <h1>客户征信管理</h1>
+      <p><span id="currentUser"></span> · 数据已连接 Netlify 网页接口</p>
+    </header>
+
+    <main>
+      <section class="toolbar">
+        <div>
+          <strong>客户列表</strong>
+          <p class="status" id="summary">正在加载客户数据...</p>
+        </div>
+        <div class="actions">
+          <input id="search" placeholder="搜索姓名、电话、备注">
+          <button class="secondary" id="refreshBtn">刷新</button>
+          <button class="secondary" id="exportBtn">导出 JSON</button>
+          <button class="danger" id="logoutBtn">退出</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <form id="customerForm" class="grid">
+          <input id="customerId" type="hidden">
+          <label class="span-3">姓名<input id="name" required></label>
+          <label class="span-3">电话<input id="phone"></label>
+          <label class="span-3">身份证号<input id="idNumber"></label>
+          <label class="span-3">状态
+            <select id="status">
+              <option>待跟进</option>
+              <option>资料审核</option>
+              <option>已通过</option>
+              <option>未通过</option>
+            </select>
+          </label>
+          <label class="span-3">授信额度<input id="limit" type="number" min="0" step="1000"></label>
+          <label class="span-3">负责人<input id="owner"></label>
+          <label class="span-6">备注<textarea id="notes"></textarea></label>
+          <label class="span-6">征信图片<input id="images" type="file" accept="image/*" multiple></label>
+          <div class="span-12 actions">
+            <button type="submit">保存客户</button>
+            <button type="button" class="secondary" id="resetBtn">清空表单</button>
+            <button type="button" class="secondary" id="importBtn">导入 JSON</button>
+            <input id="importFile" class="hidden" type="file" accept="application/json">
+          </div>
+        </form>
+        <p id="formStatus" class="status"></p>
+      </section>
+
+      <section class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>姓名</th>
+              <th>电话</th>
+              <th>状态</th>
+              <th>授信额度</th>
+              <th>负责人</th>
+              <th>备注</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="customerRows"></tbody>
+        </table>
+      </section>
+    </main>
+  </section>
+
+  <script>
+    const api = (path, options = {}) => fetch(`/api${path}`, {
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+      ...options,
+    }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok || data.success === false) throw new Error(data.error || "请求失败");
+      return data;
+    });
+
+    const state = { user: null, customers: [], query: "" };
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(id, text) {
+      $(id).textContent = text || "";
+    }
+
+    function showApp(user) {
+      state.user = user;
+      $("currentUser").textContent = `${user.name}（${user.role === "admin" ? "老板" : "员工"}）`;
+      $("loginView").classList.add("hidden");
+      $("appView").classList.remove("hidden");
+      loadCustomers();
+    }
+
+    async function login() {
+      setStatus("loginStatus", "正在登录...");
+      try {
+        const { data } = await api("/users");
+        const user = data.find((item) => item.username === $("loginUser").value && item.password === $("loginPass").value);
+        if (!user) throw new Error("用户名或密码不正确");
+        sessionStorage.setItem("creditUser", JSON.stringify(user));
+        showApp(user);
+      } catch (error) {
+        setStatus("loginStatus", error.message);
+      }
+    }
+
+    async function loadCustomers() {
+      setStatus("summary", "正在加载客户数据...");
+      try {
+        const { data } = await api("/customers");
+        state.customers = data.sort((a, b) => b.id - a.id);
+        renderCustomers();
+      } catch (error) {
+        setStatus("summary", error.message);
+      }
+    }
+
+    function filteredCustomers() {
+      const q = state.query.trim().toLowerCase();
+      if (!q) return state.customers;
+      return state.customers.filter((customer) => JSON.stringify(customer).toLowerCase().includes(q));
+    }
+
+    function renderCustomers() {
+      const rows = filteredCustomers();
+      $("customerRows").innerHTML = rows.map((customer) => `
+        <tr>
+          <td><strong>${escapeHtml(customer.name || "")}</strong></td>
+          <td>${escapeHtml(customer.phone || "")}</td>
+          <td><span class="badge">${escapeHtml(customer.status || "待跟进")}</span></td>
+          <td>${customer.limit ? Number(customer.limit).toLocaleString("zh-CN") : ""}</td>
+          <td>${escapeHtml(customer.owner || "")}</td>
+          <td>${escapeHtml(customer.notes || "")}</td>
+          <td class="actions">
+            <button class="secondary" onclick="editCustomer(${customer.id})">编辑</button>
+            <button class="danger" onclick="deleteCustomer(${customer.id})">删除</button>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="7">暂无客户数据</td></tr>`;
+      setStatus("summary", `共 ${state.customers.length} 位客户，当前显示 ${rows.length} 位`);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;",
+      }[char]));
+    }
+
+    function readForm() {
+      return {
+        id: $("customerId").value ? Number($("customerId").value) : Date.now(),
+        name: $("name").value.trim(),
+        phone: $("phone").value.trim(),
+        idNumber: $("idNumber").value.trim(),
+        status: $("status").value,
+        limit: $("limit").value ? Number($("limit").value) : 0,
+        owner: $("owner").value.trim(),
+        notes: $("notes").value.trim(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    function fillForm(customer) {
+      $("customerId").value = customer.id || "";
+      $("name").value = customer.name || "";
+      $("phone").value = customer.phone || "";
+      $("idNumber").value = customer.idNumber || "";
+      $("status").value = customer.status || "待跟进";
+      $("limit").value = customer.limit || "";
+      $("owner").value = customer.owner || "";
+      $("notes").value = customer.notes || "";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    window.editCustomer = (id) => {
+      const customer = state.customers.find((item) => item.id === id);
+      if (customer) fillForm(customer);
+    };
+
+    window.deleteCustomer = async (id) => {
+      if (!confirm("确定删除这个客户吗？")) return;
+      await api(`/customers/${id}`, { method: "DELETE" });
+      await loadCustomers();
+    };
+
+    async function saveCustomer(event) {
+      event.preventDefault();
+      const customer = readForm();
+      if (!customer.name) {
+        setStatus("formStatus", "请填写客户姓名");
+        return;
+      }
+      setStatus("formStatus", "正在保存...");
+      try {
+        await api("/customers", { method: "POST", body: JSON.stringify(customer) });
+        const files = Array.from($("images").files || []);
+        if (files.length) {
+          const images = await Promise.all(files.map(fileToDataUrl));
+          await api("/credit-images", { method: "POST", body: JSON.stringify({ customerId: customer.id, images }) });
+        }
+        $("customerForm").reset();
+        $("customerId").value = "";
+        setStatus("formStatus", "客户已保存");
+        await loadCustomers();
+      } catch (error) {
+        setStatus("formStatus", error.message);
+      }
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function exportJson() {
+      const blob = new Blob([JSON.stringify(state.customers, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `customers-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    async function importJson(file) {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error("JSON 文件必须是客户数组");
+      await api("/customers/batch", { method: "POST", body: JSON.stringify(data) });
+      await loadCustomers();
+    }
+
+    $("loginBtn").addEventListener("click", login);
+    $("customerForm").addEventListener("submit", saveCustomer);
+    $("refreshBtn").addEventListener("click", loadCustomers);
+    $("resetBtn").addEventListener("click", () => { $("customerForm").reset(); $("customerId").value = ""; });
+    $("exportBtn").addEventListener("click", exportJson);
+    $("importBtn").addEventListener("click", () => $("importFile").click());
+    $("importFile").addEventListener("change", async (event) => {
+      try {
+        if (event.target.files[0]) await importJson(event.target.files[0]);
+      } catch (error) {
+        setStatus("formStatus", error.message);
+      }
+    });
+    $("search").addEventListener("input", (event) => {
+      state.query = event.target.value;
+      renderCustomers();
+    });
+    $("logoutBtn").addEventListener("click", () => {
+      sessionStorage.removeItem("creditUser");
+      location.reload();
+    });
+
+    const savedUser = sessionStorage.getItem("creditUser");
+    if (savedUser) showApp(JSON.parse(savedUser));
+  </script>
+</body>
+</html>
